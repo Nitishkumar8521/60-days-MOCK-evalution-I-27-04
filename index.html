@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ni30 company</title>
+</head>
+<style>
+    *{
+        text-align: center;
+    }
+ #navbar{
+    display: flex;
+    justify-content: space-evenly;
+ }
+ #product-page{
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+ }
+ #product-page>div{
+    margin: 20px;
+    box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+ }
+ #product-page>div>img{
+    width: 100%;
+ }
+ #navbar{
+    background-color: aqua;
+    position: sticky;
+    top: 0px;
+ }
+</style>
+<body>
+    <!-- //------------------------- main container -->
+    <div id="container">
+        <!-- ----------------------------navbar-------------------------- -->
+        <div id="navbar">
+            <div>
+                <h2>Product Listing Page</h2>
+            </div>
+            <div>
+                <select name="" id="select-category">
+                    <option value="">Select specific category</option>
+                    <option value="men's clothing">men's clothing</option>
+                    <option value="jewelery">jewelery</option>
+                    <option value="electronics">elecronics</option>
+                    <option value="women's clothing">women's clothing</option>
+                </select>
+            </div>
+            <div>
+                <input id="search-product" type="text" placeholder="Search products">
+            </div>
+            <div>
+                <select name="" id="sorting-products">
+                    <option value="asc">Price: Low to High</option>
+                    <option value="desc">Price: High to Low</option>
+                </select>
+            </div>
+        </div>
+        <div id="product-page">
+
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    let product_page = document.querySelector('#product-page');
+    let select_category = document.querySelector('#select-category');
+
+    //--------------------------------selecting tag for sorting data --------------------------
+    let sort_products = document.querySelector('#sorting-products');
+    sort_products.addEventListener('change',function(){
+        sortProducts(sort_products.value);
+    })
+
+    //---------------------------------function for sorting items--------------------------
+
+    async function sortProducts(data){
+        try {
+            let res = await fetch(`https://fakestoreapi.com/products`);
+            let products =await res.json();
+            if(data==='asc'){
+                let newProducts = products.sort((ele1,ele2)=>{
+                    return ele1.price - ele2.price;
+                })
+                displayProduct(newProducts);
+            }
+            else if(data == 'desc'){
+                let newProducts = products.sort((ele1,ele2)=>{
+                    return ele2.price - ele1.price;
+                })
+                displayProduct(newProducts);
+            }
+            search_product.value="";
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    //--------------------selecting tag for searching data ------------------------------
+
+    let search_product = document.querySelector('#search-product');
+    search_product.addEventListener('change',function(){
+        findProduct(search_product.value);
+    })
+
+    //---------------------------------------function for find product -----------------------------
+
+    async function findProduct(data){
+        try {
+            let res = await fetch(`https://fakestoreapi.com/products`);
+            let products = await res.json();
+            let flag = products.filter((ele) => ele.title.toLowerCase() === data.toLowerCase());
+
+            if(flag.length>0){                
+                displayProduct(flag);
+            }
+            else{
+                product_page.innerHTML = "<p>No products found.</p>";
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    //--------------------------------selecting tag for selecting category ---------------------
+
+    select_category.addEventListener('change',function(){
+        selectCategory(select_category.value);
+    })
+
+    //--------------------------------function of finding selected category -----------------------
+
+    async function selectCategory(data){
+        try {
+            let res = await fetch(`https://fakestoreapi.com/products/category/${data}`);
+            let products = await res.json();
+            displayProduct(products);
+            search_product.value="";
+            // console.log(products);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    //-------------------------------function to displayData ------------------------------------
+
+    function displayProduct(data){
+        // console.log("dis")
+        if(data.length>0){
+            product_page.innerHTML="";
+            data.forEach(element => {
+                
+                let page = document.createElement('div');
+                let image = document.createElement('img');
+                image.src=element.image;
+                let title = document.createElement('h4');
+                title.innerText=`Title: ${element.title}`;
+                let price = document.createElement('p');
+                price.innerText=`Price:$  ${element.price}`;
+                page.append(image,title,price);
+                product_page.append(page);
+               
+            });
+        }
+        else{
+            return 0;
+        }
+    }
+
+//------------------------------------function to fetch data ----------------------------------
+
+async function fetchData(){
+    try {
+        let res = await fetch('https://fakestoreapi.com/products');
+        let data = await res.json();
+        displayProduct(data);
+    } catch (error) {
+        console.log("Error",error);
+    }
+}
+fetchData();
+</script>
